@@ -4,6 +4,7 @@
 
 import http from 'node:http'
 import { spawn } from 'node:child_process'
+import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import os from 'node:os'
@@ -11,7 +12,10 @@ import path from 'node:path'
 
 const PORT = Number(process.env.PORT) || 8787
 const DIST = path.resolve(import.meta.dirname, '../dist')
-const YTDLP = process.env.YTDLP_PATH || 'yt-dlp'
+const require = createRequire(import.meta.url)
+// Use the binary installed with npm. YTDLP_PATH remains available for hosts
+// that manage yt-dlp themselves.
+const YTDLP = process.env.YTDLP_PATH || require.resolve('youtube-dl-exec/bin/yt-dlp')
 const TIMEOUT_MS = 120_000
 const MAX_JOBS = 3
 
@@ -83,7 +87,10 @@ async function handleInstagram(req, res, query) {
   const formatArgs =
     type === 'audio'
       ? ['-f', 'ba/b', '-x', '--audio-format', 'mp3', '--audio-quality', '0']
-      : ['-f', 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b', '--merge-output-format', 'mp4']
+      // Instagram's DASH MP4 video streams can use VP9, which QuickTime cannot
+      // play even though the file extension is .mp4. Prefer its progressive
+      // MP4 stream: it contains H.264 video and AAC audio in one file.
+      : ['-f', 'b[ext=mp4]']
 
   try {
     const out = await runYtDlp([

@@ -7,15 +7,22 @@ Small, handy tools in one place.
 
 ## Run it
 
-Requires Node 20+, plus [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org) for the Instagram tool:
+Requires Node 20+, plus [ffmpeg](https://ffmpeg.org) for the Instagram tool. `yt-dlp` is installed automatically with the project's npm dependencies:
 
 ```sh
-brew install yt-dlp ffmpeg     # macOS
+brew install ffmpeg            # macOS
 npm install
 npm run dev                    # app on http://localhost:5173, API on :8787
 ```
 
-For production, `npm run build && npm start` serves the app and API together from one Node process (port `8787`, or `PORT`). The server runs binaries (`yt-dlp`, `ffmpeg`), so host it somewhere that allows that (a VPS, Fly.io, Render, Railway…), not on static-only hosting.
+For production, deploy using the included `Dockerfile`. It installs `ffmpeg`; the production npm install downloads the bundled `yt-dlp` binary. The app and API run from one Node process (port `8787`, or `PORT`):
+
+```sh
+docker build -t handybits .
+docker run --rm -p 8787:8787 handybits
+```
+
+Most hosts (Fly.io, Render, Railway, or a VPS) detect the Dockerfile automatically. Do not use static-only hosting: the Instagram tool needs a server that can run `yt-dlp` and `ffmpeg`.
 
 ## Instagram
 
@@ -30,7 +37,7 @@ YTDLP_COOKIES_FROM_BROWSER=chrome npm run dev     # reuse your logged-in Chrome 
 YTDLP_COOKIES=/path/to/cookies.txt npm start      # or a Netscape-format cookies file
 ```
 
-Only public reels work without cookies. Instagram changes things often; if downloads start failing, update yt-dlp first (`brew upgrade yt-dlp`). Only download content you have the right to use.
+Only public reels work without cookies. Instagram changes things often; if downloads start failing, refresh the bundled downloader first (`npm rebuild youtube-dl-exec`). Only download content you have the right to use.
 
 ## PDF Converter
 
