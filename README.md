@@ -1,14 +1,38 @@
-# PDF Toolkit
+# Handybits
 
-Convert any file to PDF, entirely in the browser. Nothing is uploaded.
+Small, handy tools in one place.
+
+- **PDF Converter**: turn any file into a PDF, entirely in your browser.
+- **Instagram**: download a reel, or just its audio, in one click.
+
+## Run it
+
+Requires Node 20+, plus [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org) for the Instagram tool:
 
 ```sh
+brew install yt-dlp ffmpeg     # macOS
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # static site in dist/, host anywhere
+npm run dev                    # app on http://localhost:5173, API on :8787
 ```
 
-## What it converts
+For production, `npm run build && npm start` serves the app and API together from one Node process (port `8787`, or `PORT`). The server runs binaries (`yt-dlp`, `ffmpeg`), so host it somewhere that allows that (a VPS, Fly.io, Render, Railway…), not on static-only hosting.
+
+## Instagram
+
+Paste a reel link, choose **Reel (video)** or **Audio only (MP3)**, and click **Download**.
+
+The browser can't fetch Instagram directly, because Instagram blocks cross-site requests, so the server does it: `server/index.js` validates the link, rebuilds a clean `instagram.com/reel/<id>/` URL, runs yt-dlp into a temp folder, streams the file back and deletes it. Nothing is stored. At most 3 downloads run at once, each with a 2-minute timeout.
+
+**If Instagram asks for a login**, which happens on some networks and server IPs, give yt-dlp your session cookies:
+
+```sh
+YTDLP_COOKIES_FROM_BROWSER=chrome npm run dev     # reuse your logged-in Chrome session
+YTDLP_COOKIES=/path/to/cookies.txt npm start      # or a Netscape-format cookies file
+```
+
+Only public reels work without cookies. Instagram changes things often; if downloads start failing, update yt-dlp first (`brew upgrade yt-dlp`). Only download content you have the right to use.
+
+## PDF Converter
 
 | Input | How |
 | --- | --- |
@@ -19,25 +43,17 @@ npm run build    # static site in dist/, host anywhere
 | Plain text, code, JSON | Real, selectable PDF text (JSON is pretty-printed) |
 | PDF | Passed through as-is |
 
-Not supported: PowerPoint/Keynote, legacy .doc, RTF, ODT, archives, audio/video. The app says why when you add one.
+Not supported: PowerPoint/Keynote, legacy .doc, RTF, ODT, archives, audio/video.
 
-File types are detected from the file's **bytes** (magic numbers, zip contents), not just the extension, so a PNG named `photo.txt` is still treated as a PNG.
+File types are detected from the file's **bytes** (magic numbers, zip contents), not just the extension.
 
-## Privacy and storage
+**Privacy and storage**: conversion never leaves the browser. Rich documents are rendered in a sandboxed iframe with scripts disabled and all network requests blocked. The list of converted files is kept in `localStorage`; the PDF bytes are kept in IndexedDB (localStorage only holds about 5 MB). Both expire after **3 days**.
 
-- All conversion runs locally in the browser. Rich documents are rendered in a sandboxed iframe with scripts disabled and a Content Security Policy that blocks all network requests. Remote images and links to remote resources are stripped first.
-- The **file index** (name, size, pages, expiry) is kept in `localStorage` under `pdf-toolkit:files`.
-- The **PDF bytes** are kept in IndexedDB (`pdf-toolkit` database), because `localStorage` only holds about 5 MB.
-- Every file expires **3 days** after it's created. Expired files are removed from both stores when the page loads and once a minute while it's open.
+**Limits**: Word, Excel, Markdown and HTML are rendered as page images (about 144 dpi), so their text isn't selectable and they run about 150–300 KB per page. Plain text and code produce real text PDFs.
 
 ## Code map
 
-- `src/lib/detect.js`: file type detection
-- `src/lib/convert.js`: converters (lazy-loaded on first convert)
-- `src/lib/storage.js`: localStorage index + IndexedDB storage, 3-day expiry
-- `src/App.jsx`: UI
-
-## Known limits
-
-- Word, Excel, Markdown and HTML files are converted to page **images** (about 144 dpi), so their text isn't selectable and they run about 150–300 KB per page. Plain text and code produce real text PDFs. Text with non-Latin characters falls back to images too, so every glyph renders.
-- Word conversion keeps structure (headings, lists, tables, images) but not exact Word layout (headers/footers, columns, page setup).
+- `src/App.jsx`: sidebar and tool routing (`#/pdf`, `#/instagram`)
+- `src/tools/PdfTool.jsx`, `src/tools/InstagramTool.jsx`: the tools
+- `src/lib/`: PDF detection, conversion, storage
+- `server/index.js`: Instagram API and production static server
