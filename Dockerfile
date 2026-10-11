@@ -1,6 +1,9 @@
 FROM node:20-bookworm-slim AS build
 
 WORKDIR /app
+RUN apt-get update \
+  && apt-get install --no-install-recommends -y python3 \
+  && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
@@ -14,7 +17,7 @@ ENV NODE_ENV=production
 # ffmpeg is required by yt-dlp for audio extraction and format merging. yt-dlp
 # itself is installed with the production npm dependencies below.
 RUN apt-get update \
-  && apt-get install --no-install-recommends -y ffmpeg \
+  && apt-get install --no-install-recommends -y ffmpeg python3 \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
