@@ -1,5 +1,6 @@
 import { Component, Suspense, useEffect, useState } from 'react'
 import { CaretDown, House, LockSimple, MagnifyingGlass } from '@phosphor-icons/react'
+import { Analytics } from '@vercel/analytics/react'
 import { GROUPS, TOOLS, findTool, markRecent, preload } from './tools/index.js'
 import Home from './components/Home.jsx'
 import CommandMenu from './components/CommandMenu.jsx'
@@ -100,11 +101,12 @@ export default function App() {
   }
 
   return (
-    <div className="shell">
-      <a className="skip" href="#main" onClick={(e) => (e.preventDefault(), document.getElementById('main')?.focus())}>
-        Skip to content
-      </a>
-      <aside className="sidebar">
+    <>
+      <div className="shell">
+        <a className="skip" href="#main" onClick={(e) => (e.preventDefault(), document.getElementById('main')?.focus())}>
+          Skip to content
+        </a>
+        <aside className="sidebar">
         <a className="logo" href="#/">
           <span className="logo-mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="16" height="16">
@@ -183,6 +185,8 @@ export default function App() {
         </ToolBoundary>
       </main>
       {menuOpen && <CommandMenu onClose={() => setMenuOpen(false)} />}
-    </div>
+      </div>
+      <Analytics />
+    </>
   )
 }
