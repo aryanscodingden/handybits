@@ -1,8 +1,18 @@
 import { Component, Suspense, useEffect, useState } from 'react'
-import { House, LockSimple, MagnifyingGlass } from '@phosphor-icons/react'
+import { CaretDown, House, LockSimple, MagnifyingGlass } from '@phosphor-icons/react'
 import { GROUPS, TOOLS, findTool, markRecent, preload } from './tools/index.js'
 import Home from './components/Home.jsx'
 import CommandMenu from './components/CommandMenu.jsx'
+
+const NAV_KEY = 'handybits:nav'
+
+function readFolded() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(NAV_KEY) || '[]'))
+  } catch {
+    return new Set()
+  }
+}
 
 // `null` is the home screen.
 function currentTool() {
@@ -45,6 +55,7 @@ class ToolBoundary extends Component {
 export default function App() {
   const [tool, setTool] = useState(currentTool)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [folded, setFolded] = useState(readFolded)
   const mac = /Mac|iPhone|iPad/.test(navigator.platform)
 
   useEffect(() => {
@@ -73,6 +84,20 @@ export default function App() {
   }, [tool])
 
   const Tool = tool?.component
+
+  function toggleGroup(g) {
+    setFolded((prev) => {
+      const next = new Set(prev)
+      if (next.has(g)) next.delete(g)
+      else next.add(g)
+      try {
+        localStorage.setItem(NAV_KEY, JSON.stringify([...next]))
+      } catch {
+        // Fold state is a nicety; ignore unavailable storage.
+      }
+      return next
+    })
+  }
 
   return (
     <div className="shell">
@@ -104,32 +129,47 @@ export default function App() {
               <span className="nav-title">All tools</span>
             </span>
           </a>
-          {GROUPS.map((g) => (
-            <div className="nav-group" key={g}>
-              <p className="nav-label">{g}</p>
-              {TOOLS.filter((t) => t.group === g).map((t) => {
-                const active = t.id === tool?.id
-                const Icon = t.icon
-                return (
-                  <a
-                    key={t.id}
-                    href={`#/${t.id}`}
-                    className={`nav-item${active ? ' active' : ''}`}
-                    aria-current={active ? 'page' : undefined}
-                    onMouseEnter={() => preload(t)}
-                    onFocus={() => preload(t)}
-                  >
-                    <span className="nav-icon">
-                      <Icon size={18} weight={active ? 'fill' : 'regular'} />
-                    </span>
-                    <span className="nav-text">
-                      <span className="nav-title">{t.label}</span>
-                    </span>
-                  </a>
-                )
-              })}
-            </div>
-          ))}
+          {GROUPS.map((g) => {
+            // The group holding the open tool always stays unfolded.
+            const open = !folded.has(g) || tool?.group === g
+            return (
+              <div className={`nav-group${open ? '' : ' folded'}`} key={g}>
+                <button
+                  type="button"
+                  className="nav-label"
+                  aria-expanded={open}
+                  aria-controls={`nav-${g}`}
+                  onClick={() => toggleGroup(g)}
+                >
+                  {g}
+                  <CaretDown className="nav-caret" size={11} weight="bold" aria-hidden="true" />
+                </button>
+                <div className="nav-group-items" id={`nav-${g}`} hidden={!open}>
+                  {TOOLS.filter((t) => t.group === g).map((t) => {
+                    const active = t.id === tool?.id
+                    const Icon = t.icon
+                    return (
+                      <a
+                        key={t.id}
+                        href={`#/${t.id}`}
+                        className={`nav-item${active ? ' active' : ''}`}
+                        aria-current={active ? 'page' : undefined}
+                        onMouseEnter={() => preload(t)}
+                        onFocus={() => preload(t)}
+                      >
+                        <span className="nav-icon">
+                          <Icon size={18} weight={active ? 'fill' : 'regular'} />
+                        </span>
+                        <span className="nav-text">
+                          <span className="nav-title">{t.label}</span>
+                        </span>
+                      </a>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
         </nav>
 
         <p className="sidebar-note">

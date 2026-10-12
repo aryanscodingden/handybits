@@ -187,3 +187,68 @@ export async function stampPdf(bytes, stamps) {
   }
   return { bytes: await doc.save(), pages: doc.getPageCount() }
 }
+
+// Parses a page selection like "1-3, 5, 8-" into sorted, unique ranges.
+// Returns { ranges: [[from, to]] } (to may be Infinity) or { error }.
+// An empty string means every page.
+export function parsePageRange(input) {
+  const text = String(input || '').trim()
+  if (!text) return { ranges: [[1, Infinity]] }
+  const ranges = []
+  for (const raw of text.split(/[,;]+/)) {
+    const part = raw.trim().replace(/[–—]/g, '-')
+    if (!part) continue
+    const m = part.match(/^(\d*)\s*-\s*(\d*)$/)
+    if (m && (m[1] || m[2])) {
+      const from = m[1] ? Number(m[1]) : 1
+      const to = m[2] ? Number(m[2]) : Infinity
+      if (from < 1 || to < 1) return { error: 'Page numbers start at 1.' }
+      if (from > to) return { error: `“${part}” goes backwards. Write it as ${to}-${from}.` }
+      ranges.push([from, to])
+    } else if (/^\d+$/.test(part)) {
+      const n = Number(part)
+      if (n < 1) return { error: 'Page numbers start at 1.' }
+      ranges.push([n, n])
+    } else {
+      return { error: `“${part}” isn’t a page or range. Use numbers like 1-3, 5.` }
+    }
+  }
+  if (!ranges.length) return { ranges: [[1, Infinity]] }
+  return { ranges }
+}
+
+// The page numbers (1-based, ascending, unique) a parsed range selects from a
+// document with `total` pages.
+export function pagesInRange(ranges, total) {
+  const set = new Set()
+  for (const [from, to] of ranges) for (let n = from; n <= Math.min(to, total); n++) set.add(n)
+  return [...set].sort((a, b) => a - b)
+}
+
+// Renders a page (1-based) at a resolution in dots per inch onto a white
+// canvas, scaled down if needed to stay under `maxPixels` and the browser's
+// canvas edge limit. The caller frees the canvas (set width/height to 0).
+export async function renderPageAtDpi(pdf, pageNumber, { dpi = 150, maxPixels = 40_000_000, maxEdge = 16_384, background = '#fff' } = {}) {
+  const page = await pdf.getPage(pageNumber)
+  try {
+    const size = page.getViewport({ scale: 1 })
+    let scale = dpi / 72
+    const pixels = size.width * size.height * scale * scale
+    if (pixels > maxPixels) scale *= Math.sqrt(maxPixels / pixels)
+    const edge = Math.max(size.width, size.height) * scale
+    if (edge > maxEdge) scale *= maxEdge / edge
+    const viewport = page.getViewport({ scale })
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(viewport.width))
+    canvas.height = Math.max(1, Math.round(viewport.height))
+    const ctx = canvas.getContext('2d')
+    if (background) {
+      ctx.fillStyle = background
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+    }
+    await page.render({ canvas, canvasContext: ctx, viewport }).promise
+    return { canvas, reduced: scale < dpi / 72 - 1e-6 }
+  } finally {
+    page.cleanup()
+  }
+}

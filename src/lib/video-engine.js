@@ -121,6 +121,54 @@ export async function probe(file) {
 // Runs one ffmpeg job. `build(input, output)` returns the argument list.
 // Calls onProgress(0..1) as ffmpeg reports its position.
 export async function run(file, { output, build, duration, onProgress }) {
+  return withInput(file, (engine, input) => execJob(engine, { output, args: (out) => build(input, out), duration, onProgress }))
+}
+
+// Runs one ffmpeg job with several inputs: `files` (File objects, mounted
+// read-only like `run`) and `data` ({ name: Uint8Array | string }, written to
+// memory in one folder and removed afterwards, so a concat list can refer to
+// its neighbours by bare name). `build({ files, data }, output)` gets the
+// mounted paths in the same order and a name -> path map for `data`.
+export async function runFiles({ files = [], data = {}, output, build, duration, onProgress }) {
+  const engine = ffmpeg
+  if (!engine) throw new Error('The video engine isn’t loaded.')
+  const stamp = Date.now()
+  const dirs = []
+  const written = []
+  try {
+    const filePaths = []
+    for (let i = 0; i < files.length; i++) {
+      const dir = `/in-${stamp}-${i}`
+      await engine.createDir(dir)
+      await engine.mount(FFFSType.WORKERFS, { files: [files[i]] }, dir)
+      dirs.push(dir)
+      filePaths.push(`${dir}/${files[i].name}`)
+    }
+    const dataPaths = {}
+    const names = Object.keys(data)
+    if (names.length) {
+      await engine.createDir(`/d-${stamp}`)
+      dirs.push(`/d-${stamp}`)
+    }
+    for (const name of names) {
+      const path = `/d-${stamp}/${name}`
+      await engine.writeFile(path, data[name])
+      written.push(path)
+      dataPaths[name] = path
+    }
+    return await execJob(engine, { output, args: (out) => build({ files: filePaths, data: dataPaths }, out), duration, onProgress })
+  } finally {
+    if (ffmpeg === engine) {
+      for (const path of written) await engine.deleteFile(path).catch(() => {})
+      for (const dir of dirs) {
+        if (dir.startsWith('/in-')) await engine.unmount(dir).catch(() => {})
+        await engine.deleteDir(dir).catch(() => {})
+      }
+    }
+  }
+}
+
+async function execJob(engine, { output, args, duration, onProgress }) {
   const lines = []
   const onLog = (msg) => {
     lines.push(msg)
@@ -132,24 +180,18 @@ export async function run(file, { output, build, duration, onProgress }) {
     }
   }
   listeners.add(onLog)
+  const out = `/${output}`
   try {
-    return await withInput(file, async (engine, input) => {
-      const out = `/${output}`
-      try {
-        const code = await engine.exec(build(input, out))
-        if (code !== 0) {
-          const err = new Error(explain(lines))
-          err.log = lines.join('\n')
-          throw err
-        }
-        const data = await engine.readFile(out)
-        return data
-      } finally {
-        if (ffmpeg === engine) await engine.deleteFile(out).catch(() => {})
-      }
-    })
+    const code = await engine.exec(args(out))
+    if (code !== 0) {
+      const err = new Error(explain(lines))
+      err.log = lines.join('\n')
+      throw err
+    }
+    return await engine.readFile(out)
   } finally {
     listeners.delete(onLog)
+    if (ffmpeg === engine) await engine.deleteFile(out).catch(() => {})
   }
 }
 

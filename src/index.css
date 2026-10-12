@@ -173,11 +173,55 @@ kbd {
 }
 
 .nav-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
   margin: 0 0 4px;
-  padding: 0 10px;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
   font-size: 12px;
   font-weight: 500;
   color: var(--faint);
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), background-color 0.15s var(--ease);
+}
+
+.nav-label:hover {
+  color: var(--fg-soft);
+  background: rgb(255 255 255 / 0.45);
+}
+
+.nav-caret {
+  opacity: 0;
+  transition: transform 0.2s var(--ease), opacity 0.15s var(--ease);
+}
+
+.nav-label:hover .nav-caret,
+.nav-label:focus-visible .nav-caret,
+.nav-group.folded .nav-caret {
+  opacity: 1;
+}
+
+.nav-group.folded .nav-caret {
+  transform: rotate(-90deg);
+}
+
+.nav-group.folded .nav-label {
+  margin-bottom: 0;
+}
+
+.nav-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-group-items[hidden] {
+  display: none;
 }
 
 .nav {
@@ -1295,7 +1339,9 @@ code {
     flex-shrink: 0;
   }
 
-  .nav-group {
+  .nav-group,
+  .nav-group-items,
+  .nav-group-items[hidden] {
     display: contents;
   }
 

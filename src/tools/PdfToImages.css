@@ -1,0 +1,240 @@
+.p2i-gap {
+  margin-top: 14px;
+}
+
+.p2i-options {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 18px 24px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.p2i-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.p2i-field .field-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.p2i-value {
+  font: 500 12px/1.6 var(--mono);
+  color: var(--muted);
+}
+
+.p2i-dpi button {
+  gap: 5px;
+}
+
+.p2i-quality input[type='range'] {
+  width: 100%;
+  margin: 8px 0 0;
+  accent-color: var(--fg-soft);
+}
+
+.p2i-quality.off .field-label {
+  color: var(--muted);
+}
+
+.p2i-quality.off input[type='range'] {
+  opacity: 0.4;
+}
+
+.p2i-range {
+  grid-column: 1 / -1;
+}
+
+.p2i .p2i-input {
+  max-width: 340px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: var(--mono);
+}
+
+.p2i .p2i-input.invalid {
+  border-color: var(--accent);
+}
+
+.p2i-hint {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.p2i-hint.bad {
+  color: var(--accent);
+}
+
+.p2i-progress {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  background: var(--sunken);
+  border: 1px solid var(--line);
+}
+
+.p2i-progress-text {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 520;
+  font-variant-numeric: tabular-nums;
+}
+
+.p2i-progress-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.p2i-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.p2i-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.25s var(--ease);
+}
+
+.p2i-group + .p2i-group {
+  margin-top: 26px;
+}
+
+.p2i-group-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.p2i-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.p2i-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  animation: enter 0.3s var(--ease) both;
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.p2i-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow);
+}
+
+.p2i-thumb {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+  padding: 10px;
+  background: var(--sunken);
+  border-bottom: 1px solid var(--line);
+}
+
+.p2i-thumb img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(60 45 20 / 0.14);
+}
+
+.p2i-pending .p2i-thumb {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.p2i-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px 6px 10px;
+}
+
+.p2i-card-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.p2i-card-name {
+  font-size: 13px;
+  font-weight: 540;
+}
+
+.p2i-card-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 560px) {
+  .p2i .row {
+    flex-wrap: nowrap;
+  }
+
+  .p2i .row-actions {
+    width: auto;
+  }
+
+  .p2i-options {
+    grid-template-columns: 1fr;
+  }
+
+  .p2i-options .segmented {
+    display: flex;
+  }
+
+  .p2i-options .segmented button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .p2i .p2i-input {
+    max-width: none;
+  }
+
+  .p2i-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}

@@ -1,0 +1,527 @@
+.dev-tabs-wrap {
+  margin: 0 0 22px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* room for focus rings */
+  padding: 3px;
+  margin-left: -3px;
+  margin-right: -3px;
+}
+
+.dev-tabs-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.dev-tabs button {
+  white-space: nowrap;
+}
+
+.dev-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: enter 0.25s var(--ease) both;
+}
+
+.dev-panel > .section {
+  margin-top: 26px;
+}
+
+.dev-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.dev-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dev-field-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+
+.dev-field-head .field-label {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-meta {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dev-field-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.dev-area {
+  display: block;
+  width: 100%;
+  min-height: 150px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--fg);
+  font: 14.5px/1.6 var(--sans);
+  resize: vertical;
+  tab-size: 4;
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.dev-area.mono {
+  font: 13px/1.6 var(--mono);
+}
+
+.dev-area::placeholder {
+  color: var(--faint);
+}
+
+.dev-area:hover {
+  border-color: var(--line-strong);
+}
+
+.dev-area:focus-visible {
+  outline: none;
+  border-color: var(--fg-soft);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.dev-area.out {
+  min-height: 180px;
+  background: color-mix(in srgb, var(--sunken) 35%, var(--surface));
+}
+
+.dev-status:empty {
+  display: none;
+}
+
+.dev-note {
+  margin: 0;
+}
+
+.dev-note p {
+  margin: 0;
+}
+
+.dev-warn {
+  background: var(--sunken);
+  color: var(--fg-soft);
+}
+
+.dev-pos {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+.dev-json-err > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.dev-json-snippet {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  background: rgb(255 255 255 / 0.65);
+  font: 12.5px/1.5 var(--mono);
+  color: var(--fg);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.dev-ln {
+  display: inline-block;
+  min-width: 3ch;
+  margin-right: 10px;
+  color: var(--faint);
+  text-align: right;
+  user-select: none;
+}
+
+.dev-caret {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.dev-input {
+  padding: 11px 14px;
+  font-size: 14px;
+}
+
+.dev-input.mono {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.dev-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.dev-hint strong {
+  font-weight: 550;
+  color: var(--fg-soft);
+}
+
+.dev-hint-top {
+  margin-top: -4px;
+  color: var(--faint);
+}
+
+.dev-copy {
+  flex-shrink: 0;
+}
+
+.dev-file-out {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dev-panel .section .dev-file-out,
+.dev-panel .section .notice {
+  margin-top: 12px;
+}
+
+.dev-filename {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50%;
+}
+
+.dev-pre {
+  margin: 0;
+  max-height: 360px;
+  overflow: auto;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--sunken) 35%, var(--surface));
+  font: 12.5px/1.6 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.dev-sig {
+  color: var(--muted);
+}
+
+/* Tables */
+
+.dev-table {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-size: 13.5px;
+  overflow: hidden;
+}
+
+.dev-table th,
+.dev-table td {
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: middle;
+  border-top: 1px solid var(--line);
+}
+
+.dev-table tr:first-child th,
+.dev-table tr:first-child td {
+  border-top: 0;
+}
+
+.dev-table thead th {
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--sunken) 45%, var(--surface));
+}
+
+.dev-table tbody th {
+  width: 1%;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.dev-table td code {
+  padding: 0;
+  background: none;
+  font-size: 12.5px;
+  word-break: break-all;
+}
+
+.dev-td-act {
+  width: 1%;
+  text-align: right !important;
+  padding: 4px 6px !important;
+}
+
+.dev-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 22px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dev-empty-val {
+  color: var(--faint);
+  font-style: italic;
+  font-family: var(--sans);
+}
+
+/* UUID */
+
+.dev-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-num {
+  width: 76px;
+  padding: 7px 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dev-uuids {
+  padding: 10px 10px 8px 18px;
+}
+
+.dev-uuid-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.dev-uuid-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 0;
+  border-top: 1px solid var(--line);
+}
+
+.dev-uuid-list code {
+  padding: 0;
+  background: none;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  overflow-wrap: anywhere;
+}
+
+/* Hash */
+
+.dev-hashes {
+  list-style: none;
+  margin: 0;
+  padding: 4px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.dev-hashes li {
+  padding: 8px 0 12px;
+}
+
+.dev-hashes li + li {
+  border-top: 1px solid var(--line);
+}
+
+.dev-hash-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dev-hash-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--fg-soft);
+}
+
+.dev-hash-val {
+  display: block;
+  padding: 0;
+  background: none;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--fg-soft);
+  word-break: break-all;
+  min-height: 1.55em;
+}
+
+.dev-hashes li.hit .dev-hash-val {
+  color: var(--ok);
+}
+
+.dev-match {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--ok);
+}
+
+.dev-expected {
+  margin-top: 6px;
+}
+
+.dev-expected .notice {
+  margin-top: 8px;
+}
+
+/* JWT */
+
+.dev-jwt-in .dev-area {
+  min-height: 120px;
+  word-break: break-all;
+}
+
+.dev-jwt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.dev-claims {
+  margin-top: 0;
+}
+
+.dev-claims td {
+  font-variant-numeric: tabular-nums;
+}
+
+.dev-rel {
+  margin-left: 10px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: var(--ok-soft);
+  color: var(--ok);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dev-rel.bad {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Timestamp */
+
+.dev-now {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 0;
+  padding: 6px 10px 6px 18px;
+}
+
+.dev-now-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: 10px 18px 10px 0;
+}
+
+.dev-now-item + .dev-now-item {
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+
+.dev-now-val {
+  padding: 0;
+  background: none;
+  font-size: 17px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.dev-now-item .dev-copy {
+  margin-left: -11px;
+  margin-top: 2px;
+}
+
+@media (max-width: 560px) {
+  .dev-jwt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dev-field-head {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .dev-now {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dev-now-iso {
+    grid-column: 1 / -1;
+    border-left: 0 !important;
+    padding-left: 0 !important;
+    border-top: 1px solid var(--line);
+  }
+
+  .dev-table tbody th {
+    white-space: normal;
+    width: 30%;
+  }
+
+  .dev-rel {
+    display: inline-block;
+    margin: 4px 0 0;
+  }
+
+  .dev-uuid-list code {
+    font-size: 12.5px;
+  }
+
+  .dev-filename {
+    max-width: 100%;
+  }
+}
+
+.dev-rel.neutral {
+  background: var(--sunken);
+  color: var(--muted);
+}

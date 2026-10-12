@@ -1,0 +1,407 @@
+/* GIF maker */
+
+.gif-source {
+  margin-bottom: 16px;
+}
+
+.gif-notice {
+  margin-top: 14px;
+}
+
+.gif-video {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gif-player {
+  display: block;
+  width: 100%;
+  max-height: 400px;
+  border-radius: var(--r);
+  background: #15130f;
+}
+
+.gif-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.gif-file .name {
+  flex: 1;
+  min-width: 0;
+  color: var(--fg);
+}
+
+.gif-file .meta {
+  flex-shrink: 0;
+}
+
+/* Trim track */
+
+.gif-track {
+  position: relative;
+  height: 36px;
+  margin: 0 9px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.gif-track.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gif-track-rail {
+  position: absolute;
+  left: -9px;
+  right: -9px;
+  top: 50%;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  transform: translateY(-50%);
+}
+
+.gif-track-sel {
+  position: absolute;
+  top: 50%;
+  height: 8px;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
+
+.gif-handle {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow);
+  transform: translate(-50%, -50%);
+  cursor: ew-resize;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.gif-handle::after {
+  content: '';
+  position: absolute;
+  inset: 8px 7px;
+  border-left: 1.5px solid var(--faint);
+  border-right: 1.5px solid var(--faint);
+}
+
+.gif-handle:hover,
+.gif-handle:focus-visible {
+  border-color: var(--accent);
+}
+
+.gif-handle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.gif-trim-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 22px;
+}
+
+.gif-time {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gif-trim-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: -10px;
+}
+
+.gif-trim-len {
+  font: 500 12.5px/1 var(--mono);
+  color: var(--muted);
+}
+
+.gif .segmented button {
+  white-space: nowrap;
+}
+
+.gif-preview-btn {
+  margin-left: auto;
+  margin-bottom: 3px;
+}
+
+.gif-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gif .input.gif-num {
+  width: 92px;
+  padding: 7px 10px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.gif .input.gif-clock {
+  font-family: var(--mono);
+  font-size: 13.5px;
+}
+
+.gif-unit {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Frames list */
+
+.gif-frame {
+  gap: 12px;
+}
+
+.gif-frame-num {
+  width: 18px;
+  flex-shrink: 0;
+  font: 500 12px/1 var(--mono);
+  color: var(--faint);
+  text-align: right;
+}
+
+.gif-thumb {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--sunken);
+}
+
+.gif-delay {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.gif .gif-delay .input.gif-num {
+  width: 78px;
+}
+
+.gif-frame-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.gif-add {
+  margin-top: 10px;
+}
+
+.gif-hint {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--faint);
+}
+
+/* Options */
+
+.gif-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px 28px;
+  margin-top: 24px;
+  padding: 20px 22px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.gif-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gif-value {
+  margin-left: 4px;
+  font: 500 12px/1 var(--mono);
+  color: var(--accent);
+}
+
+.gif-help {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.gif-range {
+  width: 100%;
+  max-width: 280px;
+  accent-color: var(--accent);
+}
+
+.gif-estimate {
+  min-width: 0;
+}
+
+/* Progress */
+
+.gif-progress-wrap {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  background: var(--sunken);
+  border: 1px solid var(--line);
+}
+
+.gif-progress-text {
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 520;
+  font-variant-numeric: tabular-nums;
+}
+
+.gif-progress {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.gif-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.3s var(--ease);
+}
+
+.gif-progress.indeterminate span {
+  width: 30%;
+  animation: gif-slide 1.2s var(--ease) infinite;
+}
+
+@keyframes gif-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}
+
+/* Result */
+
+.gif-result {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gif-result-frame {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border-radius: var(--r);
+  background-color: var(--sunken);
+  background-image: linear-gradient(45deg, #e9e6df 25%, transparent 25%, transparent 75%, #e9e6df 75%), linear-gradient(45deg, #e9e6df 25%, transparent 25%, transparent 75%, #e9e6df 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+}
+
+.gif-result-frame img {
+  display: block;
+  max-width: 100%;
+  max-height: 420px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+}
+
+.gif-result-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gif-inline.notice,
+.gif-result .notice {
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .gif-options {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .gif-field .segmented {
+    display: flex;
+    width: 100%;
+  }
+
+  .gif-field .segmented button {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 4px;
+  }
+
+  .gif-range {
+    max-width: none;
+  }
+
+  .gif-preview-btn {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .gif-trim-fields {
+    gap: 12px 16px;
+  }
+
+  .gif-frame {
+    flex-wrap: wrap;
+  }
+
+  .gif-frame .row-main {
+    flex-basis: calc(100% - 100px);
+  }
+
+  .gif-delay {
+    margin-left: 30px;
+  }
+
+  .gif-frame-actions {
+    margin-left: auto;
+  }
+
+  .gif-result-row {
+    flex-wrap: wrap;
+  }
+
+  .gif-result-row .btn {
+    width: 100%;
+  }
+
+  .gif-file .meta {
+    display: none;
+  }
+}

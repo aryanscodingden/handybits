@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   // Pre-bundle lazily imported deps so the dev server doesn't reload the page
   // the first time a tool imports them.
-  optimizeDeps: { include: ['heic2any', 'qrcode', 'diff', 'fflate', 'pdfjs-dist'] },
+  optimizeDeps: { include: ['heic2any', 'qrcode', 'diff', 'fflate', 'pdfjs-dist', 'tesseract.js'] },
   server: {
     // The video downloader runs in server/index.js.
     proxy: { '/api': 'http://localhost:8787' },
