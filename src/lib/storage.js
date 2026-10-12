@@ -1,6 +1,6 @@
 // Everything stays on this device.
 // - File index (names, sizes, expiry) lives in localStorage.
-// - PDF bytes live in IndexedDB, because localStorage is capped at ~5 MB.
+// - File bytes live in IndexedDB, because localStorage is capped at ~5 MB.
 // Nothing is ever sent over the network.
 
 export const RETENTION_MS = 3 * 24 * 60 * 60 * 1000
@@ -45,6 +45,12 @@ export function readIndex() {
 
 function writeIndex(list) {
   localStorage.setItem(INDEX_KEY, JSON.stringify(list))
+}
+
+// Files are shared by every tool; `tool` says which one made them. Entries
+// saved before tools were tagged all came from the PDF converter.
+export function forTool(list, tool) {
+  return list.filter((f) => (f.tool || 'pdf') === tool)
 }
 
 export async function saveFile(meta, blob) {

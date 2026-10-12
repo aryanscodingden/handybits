@@ -1,0 +1,61 @@
+/* Video downloader: platform detection and supported-site chips. */
+
+.dl-input.detected .input-icon {
+  color: var(--fg);
+  animation: dl-pop 0.22s var(--ease) both;
+}
+
+.dl-badge {
+  right: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  animation: enter 0.2s var(--ease) both;
+}
+
+.dl-sites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dl-sites li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease), background-color 0.18s var(--ease);
+}
+
+.dl-sites li.on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  background: var(--accent-soft);
+}
+
+@keyframes dl-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-input.detected .input-icon,
+  .dl-badge {
+    animation: none;
+  }
+}

@@ -1,0 +1,238 @@
+/* Video to MP3 */
+
+.vid-modes {
+  margin-bottom: 16px;
+}
+
+.vid-notice {
+  margin-top: 14px;
+}
+
+.vid-options {
+  margin-top: 24px;
+  padding: 20px 22px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.vid-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.vid-help {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-wrap: pretty;
+}
+
+.vid-help-solo {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.vid-inline {
+  margin: 4px 0 0;
+}
+
+.vid-targets {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.vid-target {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--bg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s var(--ease), background-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.vid-target:hover:not(:disabled):not(.on) {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.vid-target.on {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.vid-target:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.vid-target-size {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.vid-target-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.vid-target:not(:has(.vid-target-label))::after {
+  content: '\00a0';
+  font-size: 12px;
+}
+
+.vid-custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.vid-input {
+  width: 110px;
+  padding: 8px 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.vid-progress-wrap {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  background: var(--sunken);
+  border: 1px solid var(--line);
+}
+
+.vid-progress-text {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 520;
+  font-variant-numeric: tabular-nums;
+}
+
+.vid-progress-note {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.vid-progress-sub {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.vid-progress {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.vid-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.3s var(--ease);
+}
+
+.vid-progress.indeterminate span {
+  width: 30%;
+  animation: vid-slide 1.2s var(--ease) infinite;
+}
+
+@keyframes vid-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}
+
+.vid-result {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vid-preview {
+  display: block;
+  width: 100%;
+  max-height: 380px;
+  border-radius: var(--r);
+  background: #111;
+}
+
+.vid-preview-audio {
+  width: 100%;
+}
+
+.vid-result-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+@media (max-width: 560px) {
+  .vid-row {
+    flex-wrap: nowrap;
+  }
+
+  .vid-row .row-actions {
+    width: auto;
+  }
+
+  .vid-options {
+    padding: 16px;
+  }
+
+  .vid-modes .choice button {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 6px;
+    font-size: 12.5px;
+    text-align: center;
+  }
+
+  .vid-targets {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .vid-field .segmented {
+    display: flex;
+    width: 100%;
+  }
+
+  .vid-field .segmented button {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 8px;
+  }
+
+  .vid-result-row {
+    flex-wrap: wrap;
+  }
+
+  .vid-result-row .btn {
+    width: 100%;
+  }
+}

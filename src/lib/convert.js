@@ -436,12 +436,4 @@ export async function convertToPdf(file, type, opts) {
   }
 }
 
-export async function mergePdfs(list) {
-  const out = await PDFDocument.create()
-  for (const bytes of list) {
-    const src = await PDFDocument.load(bytes, { ignoreEncryption: true })
-    const copied = await out.copyPages(src, src.getPageIndices())
-    copied.forEach((p) => out.addPage(p))
-  }
-  return { bytes: await out.save(), pages: out.getPageCount() }
-}
+export { mergePdfs } from './pdf.js'

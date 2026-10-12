@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { ArrowSquareOut, ArrowsMerge, DownloadSimple, File, FilePdf, Trash, WarningCircle, X } from '@phosphor-icons/react'
+import DropZone from '../components/DropZone.jsx'
 import { detectType } from '../lib/detect.js'
 import { PAGE_SIZES } from '../lib/pages.js'
-import { clearAll, deleteFile, getBlob, purgeExpired, readIndex, saveFile } from '../lib/storage.js'
+import { deleteFile, forTool, getBlob, purgeExpired, readIndex, saveFile } from '../lib/storage.js'
 import { downloadBlob, formatBytes, formatTimeLeft, openBlob, toPdfName } from '../lib/format.js'
 
 const uid = () => crypto.randomUUID()
@@ -13,7 +15,7 @@ function storageError(err) {
 
 export default function PdfTool() {
   const [queue, setQueue] = useState([])
-  const [library, setLibrary] = useState(() => readIndex())
+  const [library, setLibrary] = useState(() => forTool(readIndex(), 'pdf'))
   const [pageSize, setPageSize] = useState('a4')
   const [merge, setMerge] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -23,9 +25,9 @@ export default function PdfTool() {
   const refresh = useCallback(
     () =>
       purgeExpired()
-        .catch(() => readIndex())
+        .catch(() => forTool(readIndex(), 'pdf'))
         .then((list) => {
-          setLibrary(list)
+          setLibrary(forTool(list, 'pdf'))
           setNow(Date.now())
         }),
     [],
@@ -84,6 +86,7 @@ export default function PdfTool() {
               name: toPdfName(item.file.name),
               source: item.file.name,
               sourceLabel: item.type.label,
+              tool: 'pdf',
               size: out.bytes.byteLength,
               pages: out.pages,
             },
@@ -91,7 +94,7 @@ export default function PdfTool() {
           )
           setFreshIds((ids) => new Set(ids).add(entry.id))
           remove(item.id)
-          setLibrary(readIndex())
+          setLibrary(forTool(readIndex(), 'pdf'))
         }
       } catch (err) {
         console.error(err)
@@ -109,6 +112,7 @@ export default function PdfTool() {
             name: outputs.length > 1 ? toPdfName(first).replace(/\.pdf$/, `-merged-${outputs.length}.pdf`) : toPdfName(first),
             source: outputs.map((o) => o.item.file.name).join(', '),
             sourceLabel: outputs.length > 1 ? `${outputs.length} files` : outputs[0].item.type.label,
+            tool: 'pdf',
             size: merged.bytes.byteLength,
             pages: merged.pages,
           },
@@ -116,7 +120,7 @@ export default function PdfTool() {
         )
         setFreshIds((ids) => new Set(ids).add(entry.id))
         setQueue((q) => q.filter((x) => !outputs.some((o) => o.item.id === x.id)))
-        setLibrary(readIndex())
+        setLibrary(forTool(readIndex(), 'pdf'))
       } catch (err) {
         console.error(err)
         outputs.forEach((o) => update(o.item.id, { status: 'error', error: storageError(err) }))
@@ -135,13 +139,13 @@ export default function PdfTool() {
 
   async function removeEntry(id) {
     await deleteFile(id)
-    setLibrary(readIndex())
+    setLibrary(forTool(readIndex(), 'pdf'))
   }
 
   async function removeAll() {
     if (!window.confirm('Delete all stored PDFs from this browser?')) return
-    await clearAll()
-    setLibrary([])
+    await Promise.all(library.map((f) => deleteFile(f.id)))
+    setLibrary(forTool(readIndex(), 'pdf'))
   }
 
   return (
@@ -151,7 +155,7 @@ export default function PdfTool() {
         <p className="lede">Convert any file to PDF. Everything happens in your browser — nothing is uploaded.</p>
       </header>
 
-      <DropZone onFiles={addFiles} />
+      <DropZone onFiles={addFiles} sub="Images, Word, Excel, CSV, Markdown, HTML, text, code and PDF. File type is detected automatically." />
 
       {queue.length > 0 && (
         <section className="section" aria-label="Files to convert">
@@ -179,17 +183,19 @@ export default function PdfTool() {
                 ))}
               </div>
               {ready.length > 1 && (
-                <label className="check">
+                <label className={`check${merge ? ' on' : ''}`}>
                   <input type="checkbox" checked={merge} onChange={(e) => setMerge(e.target.checked)} disabled={busy} />
+                  <ArrowsMerge size={16} />
                   Merge into one PDF
                 </label>
               )}
             </div>
             <div className="actions">
-              <button type="button" className="btn" onClick={() => setQueue([])} disabled={busy}>
+              <button type="button" className="btn ghost" onClick={() => setQueue([])} disabled={busy}>
                 Clear
               </button>
               <button type="button" className="btn primary" onClick={convert} disabled={busy || !ready.length}>
+                {busy && <span className="spinner" aria-hidden="true" />}
                 {busy ? 'Converting…' : ready.length ? `Convert ${ready.length} ${ready.length === 1 ? 'file' : 'files'}` : 'Convert'}
               </button>
             </div>
@@ -199,20 +205,30 @@ export default function PdfTool() {
 
       <section className="section">
         <div className="section-head">
-          <h2>Your PDFs</h2>
+          <h2>
+            Your PDFs
+            {library.length > 0 && <span className="count">{library.length}</span>}
+          </h2>
           {library.length > 0 && (
-            <button type="button" className="link" onClick={removeAll}>
+            <button type="button" className="btn ghost small danger" onClick={removeAll}>
+              <Trash size={15} />
               Delete all
             </button>
           )}
         </div>
 
         {library.length === 0 ? (
-          <p className="empty">Converted files show up here and stay on this device for 3 days.</p>
+          <div className="empty">
+            <FilePdf size={28} weight="light" aria-hidden="true" />
+            <p>Converted files show up here and stay on this device for 3 days.</p>
+          </div>
         ) : (
           <ul className="rows">
             {library.map((f) => (
               <li key={f.id} className={`row${freshIds.has(f.id) ? ' fresh' : ''}`}>
+                <span className="file-icon pdf" aria-hidden="true">
+                  <FilePdf size={20} weight="duotone" />
+                </span>
                 <div className="row-main">
                   <span className="name" title={f.source}>{f.name}</span>
                   <span className="meta">
@@ -221,13 +237,15 @@ export default function PdfTool() {
                 </div>
                 <div className="row-actions">
                   <button type="button" className="btn small" onClick={() => withBlob(f, openBlob)}>
+                    <ArrowSquareOut size={15} />
                     Open
                   </button>
                   <button type="button" className="btn small primary" onClick={() => withBlob(f, (b) => downloadBlob(b, f.name))}>
+                    <DownloadSimple size={15} weight="bold" />
                     Download
                   </button>
-                  <button type="button" className="icon" aria-label={`Delete ${f.name}`} onClick={() => removeEntry(f.id)}>
-                    ×
+                  <button type="button" className="icon danger" aria-label={`Delete ${f.name}`} title="Delete" onClick={() => removeEntry(f.id)}>
+                    <Trash size={17} />
                   </button>
                 </div>
               </li>
@@ -255,6 +273,9 @@ function QueueRow({ item, onRemove, disabled }) {
 
   return (
     <li className={`row${status === 'error' ? ' failed' : ''}`}>
+      <span className="file-icon" aria-hidden="true">
+        <File size={20} weight="duotone" />
+      </span>
       <div className="row-main">
         <span className="name">{file.name}</span>
         <span className="meta">
@@ -267,69 +288,19 @@ function QueueRow({ item, onRemove, disabled }) {
           )}
           {type?.note && status !== 'error' && <> · {type.note}</>}
         </span>
-        {error && <span className="error">{error}</span>}
+        {error && (
+          <span className="error">
+            <WarningCircle size={14} weight="fill" />
+            {error}
+          </span>
+        )}
       </div>
       <div className="row-actions">
         {statusText && <span className={`status ${status}`}>{statusText}</span>}
-        <button type="button" className="icon" aria-label={`Remove ${file.name}`} onClick={onRemove} disabled={disabled}>
-          ×
+        <button type="button" className="icon" aria-label={`Remove ${file.name}`} title="Remove" onClick={onRemove} disabled={disabled}>
+          <X size={16} />
         </button>
       </div>
     </li>
-  )
-}
-
-function DropZone({ onFiles }) {
-  const [over, setOver] = useState(false)
-  const depth = useRef(0)
-  const input = useRef(null)
-
-  // Dropping a file outside the zone shouldn't navigate the tab away.
-  useEffect(() => {
-    const stop = (e) => e.preventDefault()
-    window.addEventListener('dragover', stop)
-    window.addEventListener('drop', stop)
-    return () => {
-      window.removeEventListener('dragover', stop)
-      window.removeEventListener('drop', stop)
-    }
-  }, [])
-
-  return (
-    <div
-      className={`drop${over ? ' over' : ''}`}
-      role="button"
-      tabIndex={0}
-      onClick={() => input.current?.click()}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), input.current?.click())}
-      onDragEnter={(e) => {
-        e.preventDefault()
-        depth.current++
-        setOver(true)
-      }}
-      onDragLeave={() => {
-        depth.current = Math.max(0, depth.current - 1)
-        if (!depth.current) setOver(false)
-      }}
-      onDrop={(e) => {
-        e.preventDefault()
-        depth.current = 0
-        setOver(false)
-        onFiles(e.dataTransfer.files)
-      }}
-    >
-      <input
-        ref={input}
-        type="file"
-        multiple
-        hidden
-        onChange={(e) => {
-          onFiles(e.target.files)
-          e.target.value = ''
-        }}
-      />
-      <p className="drop-title">{over ? 'Drop to add' : 'Drop files here or click to browse'}</p>
-      <p className="drop-sub">Images, Word, Excel, CSV, Markdown, HTML, text, code and PDF. File type is detected automatically.</p>
-    </div>
   )
 }

@@ -1,0 +1,73 @@
+.cmp-skipped {
+  margin-top: 16px;
+}
+
+.cmp-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 14px 0 0;
+  padding: 11px 14px;
+  border-radius: var(--r);
+  background: var(--sunken);
+  font-size: 13px;
+  color: var(--fg-soft);
+  text-wrap: pretty;
+}
+
+.cmp-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--muted);
+}
+
+.cmp-levels button {
+  gap: 8px;
+}
+
+.cmp-after {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.cmp-bar {
+  display: block;
+  height: 3px;
+  margin-top: 7px;
+  border-radius: 3px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+
+.cmp-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--fg-soft);
+  transition: width 0.25s var(--ease);
+}
+
+.cmp-total {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 560px) {
+  .cmp-levels {
+    display: flex;
+    width: 100%;
+  }
+
+  .cmp-levels button {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 8px;
+  }
+
+  .cmp-total {
+    text-align: left;
+  }
+}

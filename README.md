@@ -2,12 +2,17 @@
 
 Small, handy tools in one place.
 
-- **PDF Converter**: turn any file into a PDF, entirely in your browser.
-- **Instagram**: download a reel, or just its audio, in one click.
+- **PDF**: convert any file to PDF; merge, split, reorder and rotate pages; compress; sign.
+- **Image**: compress, resize and convert images (including iPhone HEIC); remove backgrounds; make QR codes.
+- **Media**: download videos from Instagram, TikTok, X, Reddit, Pinterest and Facebook; extract MP3 audio or shrink a video to a target size.
+- **Text**: word and character counter; case conversion, cleanup, sorting and text comparison.
+- **Everyday**: password and passphrase generator; time zone converter and meeting planner.
+
+Everything except the video downloader runs in the browser. Files never leave the device.
 
 ## Run it
 
-Requires Node 20+, plus [ffmpeg](https://ffmpeg.org) for the Instagram tool. `yt-dlp` is installed automatically with the project's npm dependencies:
+Requires Node 20+, plus [ffmpeg](https://ffmpeg.org) for the video downloader. `yt-dlp` is installed automatically with the project's npm dependencies:
 
 ```sh
 brew install ffmpeg            # macOS
@@ -24,20 +29,46 @@ docker run --rm -p 8787:8787 handybits
 
 Most hosts (Fly.io, Render, Railway, or a VPS) detect the Dockerfile automatically. Do not use static-only hosting: the Instagram tool needs a server that can run `yt-dlp` and `ffmpeg`.
 
-## Instagram
+## Video downloader
 
-Paste a reel link, choose **Reel (video)** or **Audio only (MP3)**, and click **Download**.
+Paste a link, choose **Video (MP4)** or **Audio only (MP3)**, and click **Download**. Supported sites:
 
-The browser can't fetch Instagram directly, because Instagram blocks cross-site requests, so the server does it: `server/index.js` validates the link, rebuilds a clean `instagram.com/reel/<id>/` URL, runs yt-dlp into a temp folder, streams the file back and deletes it. Nothing is stored. At most 3 downloads run at once, each with a 2-minute timeout.
+| Site | Links |
+| --- | --- |
+| Instagram | `instagram.com/reel/…`, `/p/…`, `/tv/…` |
+| TikTok | `tiktok.com/@user/video/…`, `vm.tiktok.com/…`, `vt.tiktok.com/…`, `tiktok.com/t/…` |
+| X / Twitter | `x.com/user/status/…`, `twitter.com/user/status/…` |
+| Reddit | `reddit.com/r/…/comments/…`, `reddit.com/r/…/s/…`, `redd.it/…`, `v.redd.it/…` |
+| Pinterest | `pinterest.*/pin/…`, `pin.it/…` |
+| Facebook | `facebook.com/reel/…`, `facebook.com/watch?v=…`, `facebook.com/…/videos/…`, `facebook.com/share/v/…`, `fb.watch/…` |
 
-**If Instagram asks for a login**, which happens on some networks and server IPs, give yt-dlp your session cookies:
+YouTube is not supported.
+
+The browser can't fetch these sites directly, because they block cross-site requests, so the server does it. `GET /api/download?url=…&type=video|audio` (`/api/instagram` is kept as an alias) checks the link against a fixed allowlist in `server/sites.js`, rebuilds a canonical URL from the post ID (yt-dlp never sees the raw input or any other host), runs yt-dlp into a temp folder, streams the file back and deletes it. Nothing is stored. At most 3 downloads run at once, each with a 2-minute timeout, a 300 MB size cap and a 30-minute length cap. Videos prefer H.264 MP4 so they play in QuickTime. `GET /api/sites` lists the supported sites.
+
+TikTok needs yt-dlp's browser impersonation, which requires the `curl_cffi` Python package next to the bundled yt-dlp (for example `pip install curl_cffi`). Without it, TikTok downloads fail with an SSL error.
+
+**If Instagram asks for a login on your server**, the cause is usually the IP address, not the reel. Instagram serves public reels anonymously to home connections but asks datacenter IPs (most VPSes) to log in. Route yt-dlp through a home machine instead of using your account:
+
+```sh
+# On an always-on home machine on your tailnet (Mac, Pi, etc.)
+brew install microsocks                                  # or: apt install microsocks
+microsocks -i "$(tailscale ip -4)" -p 1080               # only listens on the tailnet
+
+# On the server
+YTDLP_PROXY=socks5://<home-machine-tailscale-ip>:1080 npm start
+```
+
+Only yt-dlp's requests to the video sites use the proxy. Other sites may ask datacenter IPs to log in too; the same proxy fixes that. The video still streams from the server to the browser. Any `http://`, `https://` or `socks5://` proxy works.
+
+As a last resort, yt-dlp can use session cookies. Use a throwaway account, because Instagram may flag accounts used this way:
 
 ```sh
 YTDLP_COOKIES_FROM_BROWSER=chrome npm run dev     # reuse your logged-in Chrome session
 YTDLP_COOKIES=/path/to/cookies.txt npm start      # or a Netscape-format cookies file
 ```
 
-Only public reels work without cookies. Instagram changes things often; if downloads start failing, refresh the bundled downloader first (`npm rebuild youtube-dl-exec`). Only download content you have the right to use.
+Only public videos work without cookies. Sites change things often; if downloads start failing, refresh the bundled downloader first (`npm rebuild youtube-dl-exec`). Only download content you have the right to use.
 
 ## PDF Converter
 
@@ -60,7 +91,10 @@ File types are detected from the file's **bytes** (magic numbers, zip contents),
 
 ## Code map
 
-- `src/App.jsx`: sidebar and tool routing (`#/pdf`, `#/instagram`)
-- `src/tools/PdfTool.jsx`, `src/tools/InstagramTool.jsx`: the tools
-- `src/lib/`: PDF detection, conversion, storage
-- `server/index.js`: Instagram API and production static server
+- `src/tools/index.js`: the tool registry (id, label, icon, group, search keywords). Add a tool here and it appears in the sidebar, home screen and ⌘K menu; each tool's code loads only when it's opened.
+- `src/App.jsx`: sidebar, hash routing (`#/<tool-id>`, `#/` for the home screen), lazy loading
+- `src/components/`: shared drop zone, home screen, ⌘K command menu
+- `src/tools/*.jsx` (+ matching `.css`): one file per tool
+- `src/lib/`: shared logic. `pdf.js` (pdf-lib + pdf.js page work), `convert.js` (any file → PDF), `storage.js` (3-day on-device library), `bg-worker.js` (background removal model, in a worker), `video-engine.js` (ffmpeg.wasm), plus pure helpers for images, QR codes, text, passwords and time zones
+- `server/index.js`: video downloader API and production static server
+- `server/sites.js`: allowlist of supported sites and link validation
