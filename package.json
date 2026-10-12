@@ -19,6 +19,7 @@
     "@huggingface/transformers": "^4.3.1",
     "@phosphor-icons/react": "^2.1.10",
     "@tesseract.js-data/eng": "^1.0.0",
+    "@vercel/analytics": "^2.0.1",
     "diff": "^9.0.0",
     "dompurify": "^3.4.16",
     "fflate": "^0.8.3",
