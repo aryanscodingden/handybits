@@ -2,7 +2,7 @@
 small, handy tools in one place
 
 # why Handybits?
-Everyday tools without the upload-your-file-to-a-random-server part
+Everyday tools without the upload-your-file-to-the-darkweb-servers part
 - merge, compress and sign PDFs
 - remove backgrounds, compress images, make QR codes
 - cut audio, make GIFs, record your screen
