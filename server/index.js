@@ -38,7 +38,7 @@ function cookieArgs() {
   return []
 }
 
-// Instagram (and sometimes others) demand a login from datacenter IPs (like
+// Instagram, YouTube (and sometimes others) demand a login from datacenter IPs (like
 // most VPSes) but not from home connections. YTDLP_PROXY routes yt-dlp through
 // a residential machine, e.g. a SOCKS proxy on a home computer reachable over
 // Tailscale.
@@ -60,10 +60,19 @@ function videoFormatArgs(site) {
   ]
 }
 
+// YouTube hides its stream URLs behind a JavaScript challenge. yt-dlp solves it
+// with a JS runtime, and Node is already here.
+function siteArgs(site) {
+  return site.id === 'youtube' ? ['--js-runtimes', 'node'] : []
+}
+
 const AUDIO_ARGS = ['-f', 'ba/b[acodec!=none]/b', '-x', '--audio-format', 'mp3', '--audio-quality', '0']
 
 function friendlyError(stderr, label) {
-  if (/login required|log in|rate-?limit|checkpoint|cookies|authenticat/i.test(stderr)) {
+  if (label === 'YouTube' && /not a bot|sign in to confirm/i.test(stderr)) {
+    return [429, 'YouTube thinks this server is a bot. This usually happens on datacenter IPs; the server needs YTDLP_PROXY set to a home connection (see README).']
+  }
+  if (/login required|log in|sign in|rate-?limit|checkpoint|cookies|authenticat/i.test(stderr)) {
     return label === 'Instagram'
       ? [429, 'Instagram is asking for a login. Try again later, or route the server through YTDLP_PROXY (see README).']
       : [429, `${label} is asking for a login. The post may be private or age-restricted, or ${label} is limiting requests right now.`]
@@ -143,6 +152,7 @@ async function handleDownload(req, res, query) {
       '--print', `after_filter:${PASSED} %(id)s`,
       ...proxyArgs(),
       ...cookieArgs(),
+      ...siteArgs(site),
       ...(type === 'audio' ? AUDIO_ARGS : videoFormatArgs(site)),
       '-o', path.join(dir, `${site.id}-%(uploader_id,uploader,channel|video)s-%(id)s.%(ext)s`),
       '--print', 'after_move:filepath',

@@ -131,10 +131,10 @@ export const TOOLS = [
     id: 'download',
     aliases: ['instagram'],
     label: 'Video downloader',
-    hint: 'Instagram, TikTok, X, Reddit',
+    hint: 'YouTube, Instagram, TikTok, X',
     icon: CloudArrowDown,
     group: 'Media',
-    keywords: 'download instagram reel tiktok twitter x reddit pinterest facebook video audio mp3',
+    keywords: 'download youtube shorts instagram reel tiktok twitter x reddit pinterest facebook video audio mp3',
     load: () => import('./Downloader.jsx'),
   }),
   tool({

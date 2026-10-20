@@ -4,7 +4,7 @@ Small, handy tools in one place.
 
 - **PDF**: convert any file to PDF; merge, split, reorder and rotate pages; compress; sign.
 - **Image**: compress, resize and convert images (including iPhone HEIC); remove backgrounds; make QR codes.
-- **Media**: download videos from Instagram, TikTok, X, Reddit, Pinterest and Facebook; extract MP3 audio or shrink a video to a target size.
+- **Media**: download videos from YouTube, Instagram, TikTok, X, Reddit, Pinterest and Facebook; extract MP3 audio or shrink a video to a target size.
 - **Text**: word and character counter; case conversion, cleanup, sorting and text comparison.
 - **Everyday**: password and passphrase generator; time zone converter and meeting planner.
 
@@ -35,6 +35,7 @@ Paste a link, choose **Video (MP4)** or **Audio only (MP3)**, and click **Downlo
 
 | Site | Links |
 | --- | --- |
+| YouTube | `youtube.com/watch?v=…`, `youtu.be/…`, `youtube.com/shorts/…`, `music.youtube.com/watch?v=…` |
 | Instagram | `instagram.com/reel/…`, `/p/…`, `/tv/…` |
 | TikTok | `tiktok.com/@user/video/…`, `vm.tiktok.com/…`, `vt.tiktok.com/…`, `tiktok.com/t/…` |
 | X / Twitter | `x.com/user/status/…`, `twitter.com/user/status/…` |
@@ -42,7 +43,7 @@ Paste a link, choose **Video (MP4)** or **Audio only (MP3)**, and click **Downlo
 | Pinterest | `pinterest.*/pin/…`, `pin.it/…` |
 | Facebook | `facebook.com/reel/…`, `facebook.com/watch?v=…`, `facebook.com/…/videos/…`, `facebook.com/share/v/…`, `fb.watch/…` |
 
-YouTube is not supported.
+Single YouTube videos only (no playlists or channels). yt-dlp needs a JavaScript runtime to read YouTube; the server passes `--js-runtimes node`, and Node is already there. YouTube blocks datacenter IPs more aggressively than any other site here ("confirm you’re not a bot"), so on a VPS expect to need `YTDLP_PROXY` below.
 
 The browser can't fetch these sites directly, because they block cross-site requests, so the server does it. `GET /api/download?url=…&type=video|audio` (`/api/instagram` is kept as an alias) checks the link against a fixed allowlist in `server/sites.js`, rebuilds a canonical URL from the post ID (yt-dlp never sees the raw input or any other host), runs yt-dlp into a temp folder, streams the file back and deletes it. Nothing is stored. At most 3 downloads run at once, each with a 2-minute timeout, a 300 MB size cap and a 30-minute length cap. Videos prefer H.264 MP4 so they play in QuickTime. `GET /api/sites` lists the supported sites.
 

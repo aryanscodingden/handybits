@@ -13,6 +13,7 @@ import {
   TiktokLogo,
   WarningCircle,
   XLogo,
+  YoutubeLogo,
 } from '@phosphor-icons/react'
 import { downloadBlob, formatBytes } from '../lib/format.js'
 import './Downloader.css'
@@ -20,6 +21,17 @@ import './Downloader.css'
 // A loose mirror of the server's allowlist (server/sites.js), used to show the
 // platform and enable the button. The server does the strict validation.
 const PLATFORMS = [
+  {
+    id: 'youtube',
+    label: 'YouTube',
+    icon: YoutubeLogo,
+    host: /(^|\.)youtube\.com$|^(www\.)?youtu\.be$/,
+    check: (u) =>
+      /^(www\.)?youtu\.be$/i.test(u.hostname)
+        ? /^\/[\w-]{11}\/?$/.test(u.pathname)
+        : /^\/(shorts|live|embed|v)\/[\w-]{11}\/?$/.test(u.pathname) ||
+          (/^\/watch\/?$/.test(u.pathname) && /^[\w-]{11}$/.test(u.searchParams.get('v') || '')),
+  },
   {
     id: 'instagram',
     label: 'Instagram',
@@ -64,8 +76,7 @@ const PLATFORMS = [
   },
 ]
 
-const YOUTUBE = /(^|\.)(youtube\.com|youtu\.be|youtube-nocookie\.com)$/
-const SITE_NAMES = 'Instagram, TikTok, X, Reddit, Pinterest or Facebook'
+const SITE_NAMES = 'YouTube, Instagram, TikTok, X, Reddit, Pinterest or Facebook'
 
 // Accept links pasted without a scheme ("instagram.com/reel/…").
 function normalize(text) {
@@ -82,10 +93,9 @@ function detect(text) {
   }
   if (u.protocol !== 'https:' && u.protocol !== 'http:') return {}
   const host = u.hostname.toLowerCase()
-  if (YOUTUBE.test(host)) return { youtube: true }
   const platform = PLATFORMS.find((p) => p.host.test(host))
   if (!platform) return {}
-  return { platform, valid: platform.video(host).test(u.pathname) }
+  return { platform, valid: platform.check ? platform.check(u) : platform.video(host).test(u.pathname) }
 }
 
 const MODES = {
@@ -114,7 +124,7 @@ export default function Downloader() {
   }, [])
 
   const link = normalize(url.trim())
-  const { platform, valid, youtube } = detect(link)
+  const { platform, valid } = detect(link)
   const PlatformIcon = platform?.icon || LinkSimple
 
   async function paste() {
@@ -150,8 +160,7 @@ export default function Downloader() {
   }
 
   let hint = null
-  if (link && youtube) hint = `YouTube isn’t supported. Try a link from ${SITE_NAMES}.`
-  else if (link && platform && !valid) hint = `That ${platform.label} link doesn’t point to a video post.`
+  if (link && platform && !valid) hint = `That ${platform.label} link doesn’t point to a video post.`
   else if (link && !platform) hint = `That doesn’t look like a link from ${SITE_NAMES}.`
 
   return (
@@ -178,7 +187,7 @@ export default function Downloader() {
             className="input"
             type="url"
             inputMode="url"
-            placeholder="Paste a link to a reel, TikTok, post or pin"
+            placeholder="Paste a link to a video, reel, TikTok, post or pin"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             disabled={busy}

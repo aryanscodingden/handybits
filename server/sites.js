@@ -14,7 +14,33 @@ const PINTEREST_HOSTS = new Set(
   PINTEREST_TLDS.flatMap((tld) => [`pinterest.${tld}`, `www.pinterest.${tld}`]),
 )
 
+const YT_ID = /^[A-Za-z0-9_-]{11}$/
+
 export const SITES = [
+  {
+    id: 'youtube',
+    label: 'YouTube',
+    hosts: hosts('youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com', 'youtu.be', 'www.youtu.be'),
+    paths: [
+      {
+        host: /youtube\.com$/,
+        re: /^\/watch\/?$/,
+        query: 'v',
+        queryRe: YT_ID,
+        clean: (m, host, id) => `https://www.youtube.com/watch?v=${id}`,
+      },
+      {
+        host: /youtube\.com$/,
+        re: /^\/(?:shorts|live|embed|v)\/([A-Za-z0-9_-]{11})\/?$/,
+        clean: (m) => `https://www.youtube.com/watch?v=${m[1]}`,
+      },
+      {
+        host: /^(?:www\.)?youtu\.be$/,
+        re: /^\/([A-Za-z0-9_-]{11})\/?$/,
+        clean: (m) => `https://www.youtube.com/watch?v=${m[1]}`,
+      },
+    ],
+  },
   {
     id: 'instagram',
     label: 'Instagram',
@@ -144,14 +170,12 @@ export const SITES = [
   },
 ]
 
-const YOUTUBE = /(?:^|\.)(?:youtube\.com|youtu\.be|youtube-nocookie\.com)$/
-
 /**
  * Validate a user-supplied link.
  * Returns { site, url } with a canonical URL, or { error } with a message.
  */
 export function matchSite(input) {
-  const unsupported = { error: 'That doesn’t look like a supported video link (Instagram, TikTok, X, Reddit, Pinterest or Facebook).' }
+  const unsupported = { error: 'That doesn’t look like a supported video link (YouTube, Instagram, TikTok, X, Reddit, Pinterest or Facebook).' }
   if (typeof input !== 'string' || input.length > 2048) return unsupported
   let u
   try {
@@ -162,7 +186,6 @@ export function matchSite(input) {
   if (u.protocol !== 'https:' && u.protocol !== 'http:') return unsupported
   if (u.username || u.password || u.port) return unsupported
   const host = u.hostname.toLowerCase()
-  if (YOUTUBE.test(host)) return { error: 'YouTube isn’t supported.' }
 
   const site = SITES.find((s) => s.hosts.has(host))
   if (!site) return unsupported
@@ -172,7 +195,7 @@ export function matchSite(input) {
     if (!m) continue
     if (p.query) {
       const id = u.searchParams.get(p.query) || ''
-      if (!/^\d{5,25}$/.test(id)) continue
+      if (!(p.queryRe || /^\d{5,25}$/).test(id)) continue
       return { site, url: p.clean(m, host, id) }
     }
     return { site, url: p.clean(m, host) }
